@@ -32,9 +32,6 @@ def get_data_from_web(bank):
             stockHistory['volume_yesterday'] = h6_css_cvilom_yesterday[5].text.strip()
             data[today] = stockHistory
     return data
-@app.route("/")
-def hello_world():
-    return "Hello, World!"
 def crawl(banks_hose,banks_hnx):
     for  bank in banks_hose:
         data[bank] = {}
@@ -44,8 +41,13 @@ def crawl(banks_hose,banks_hnx):
         data[bank] = get_data_from_web(bank)
     print(data)
     return data
-
-schedule.every(1).minutes.do(crawl, banks_hose=banks_hose,banks_hnx=banks_hnx)
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+@app.route("/testapi")
+def hello_world():
+    schedule.every(1).minutes.do(crawl, banks_hose=banks_hose,banks_hnx=banks_hnx)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+        return "Hello, World!"
+if __name__ == "__main__":
+    app.run(debug=True)
+    
