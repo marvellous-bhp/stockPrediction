@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import schedule
-from flask import Flask, request, jsonify, session
+from flask import Flask
 import mysql.connector
 from datetime import datetime
 
@@ -15,7 +15,7 @@ def convertDouble(str):
 
 def save_data_to_mysql(data):
     db = mysql.connector.connect(
-        host="localhost",  
+        host="DN-DESK-053",  
         user="root",
         password="1234",
         database="stock_prediction",
@@ -27,11 +27,10 @@ def save_data_to_mysql(data):
         stock_id = cursor.fetchone()[0] 
         print(stock_id,'bank',stock_data)
         for date, values in stock_data.items():
-            date_obj = datetime.strptime(date, '%d/%m/%Y')
-            formatted_date = date_obj.strftime('%Y-%m-%d 00:00:00')
+            now = datetime.now()
             sql = """INSERT INTO stockhistory (stockid, date, open, high, low, close, volume)
                         VALUES (%s, %s, %s, %s, %s, %s, %s)"""
-            cursor.execute(sql, (stock_id, formatted_date, convertDouble(values['open']), convertDouble(values['high']), convertDouble(values['low']), convertDouble(values['close_yesterday']), convertDouble(values['volume_yesterday'])))
+            cursor.execute(sql, (stock_id, now, convertDouble(values['open']), convertDouble(values['high']), convertDouble(values['low']), convertDouble(values['close_yesterday']), convertDouble(values['volume_yesterday'])))
 
     db.commit()
     cursor.close()
@@ -76,7 +75,7 @@ def crawl(banks_hose,banks_hnx):
 def hello_world():
         return "Hello, World!"
 
-schedule.every(5).minutes.do(crawl, banks_hose=banks_hose,banks_hnx=banks_hnx)
+schedule.every(0.1).minutes.do(crawl, banks_hose=banks_hose,banks_hnx=banks_hnx)
 
 while True:
     schedule.run_pending()
