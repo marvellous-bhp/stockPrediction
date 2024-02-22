@@ -15,7 +15,7 @@ def convertDouble(str):
 
 def save_data_to_mysql(data):
     db = mysql.connector.connect(
-        host="DN-DESK-053",  
+        host="127.0.0.1",  
         user="root",
         password="1234",
         database="stock_prediction",
