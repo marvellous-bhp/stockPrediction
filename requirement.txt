@@ -1,0 +1,7 @@
+# Python==3.9.13
+Flask==2.2.5
+flask_jwt_extended==4.6.0
+flask_cors==4.0.0
+schedule==1.2.1
+bs4==0.0.1
+requests==2.31.0
