@@ -43,11 +43,10 @@ def crawl(banks_hose,banks_hnx):
     return data
 @app.route("/testapi")
 def hello_world():
-    schedule.every(1).minutes.do(crawl, banks_hose=banks_hose,banks_hnx=banks_hnx)
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
         return "Hello, World!"
-if __name__ == "__main__":
-    app.run(debug=True)
+
+schedule.every(5).minutes.do(crawl, banks_hose=banks_hose,banks_hnx=banks_hnx)
+while True:
+    schedule.run_pending()
+    time.sleep(1)
     
