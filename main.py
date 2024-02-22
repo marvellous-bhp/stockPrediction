@@ -3,9 +3,39 @@ from bs4 import BeautifulSoup
 import time
 import schedule
 from flask import Flask, request, jsonify, session
-# from flask_bcrypt import Bcrypt #pip install Flask-Bcrypt = https://pypi.org/project/Flask-Bcrypt/
-# from flask_cors import CORS, cross_origin #ModuleNotFoundError: No module named 'flask_cors' = pip install Flask-Cors
-# from models import db, User
+import mysql.connector
+from datetime import datetime
+
+def convertDouble(str):
+    if str =='-':
+        double = 0
+    else:    
+        double = float(str.replace(',', ''))
+    return double
+
+def save_data_to_mysql(data):
+    db = mysql.connector.connect(
+        host="localhost",  
+        user="root",
+        password="1234",
+        database="stock_prediction",
+        auth_plugin="mysql_native_password"
+    )
+    cursor = db.cursor()
+    for bank, stock_data in data.items():
+        cursor.execute("SELECT stockid FROM stocklist WHERE symboy = %s", (bank,))
+        stock_id = cursor.fetchone()[0] 
+        print(stock_id,'bank',stock_data)
+        for date, values in stock_data.items():
+            date_obj = datetime.strptime(date, '%d/%m/%Y')
+            formatted_date = date_obj.strftime('%Y-%m-%d 00:00:00')
+            sql = """INSERT INTO stockhistory (stockid, date, open, high, low, close, volume)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+            cursor.execute(sql, (stock_id, formatted_date, convertDouble(values['open']), convertDouble(values['high']), convertDouble(values['low']), convertDouble(values['close_yesterday']), convertDouble(values['volume_yesterday'])))
+
+    db.commit()
+    cursor.close()
+    db.close()
  
 app = Flask(__name__)
 banks_hose = ['ACB', 'BID', 'CTG','EIB', 'HDB', 'MBB', 'MSB','OCB','SHB','SSB','STB','TCB','TPB','VCB','VIB','VPB']
@@ -40,12 +70,14 @@ def crawl(banks_hose,banks_hnx):
         data[bank] = {}
         data[bank] = get_data_from_web(bank)
     print(data)
+    save_data_to_mysql(data)
     return data
 @app.route("/testapi")
 def hello_world():
         return "Hello, World!"
 
 schedule.every(5).minutes.do(crawl, banks_hose=banks_hose,banks_hnx=banks_hnx)
+
 while True:
     schedule.run_pending()
     time.sleep(1)
